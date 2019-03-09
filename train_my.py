@@ -25,7 +25,7 @@ from yolo3.utils import get_random_data
 
 def _main():
     annotation_path = 'train.txt'
-    log_dir = 'logs/000/'
+    log_dir = 'trained_model/'
     classes_path = 'model_data_my/my_classes.txt'
     anchors_path = 'model_data_my/yolo_anchors.txt'
     class_names = get_classes(classes_path)
@@ -43,7 +43,7 @@ def _main():
             freeze_body=2, weights_path='model_data_my/yolo_weights.h5') # make sure you know what you freeze
 
     logging = TensorBoard(log_dir=log_dir)
-    checkpoint = ModelCheckpoint(log_dir + 'ep{epoch:03d}-loss{loss:.3f}-val_loss{val_loss:.3f}.h5',
+    #checkpoint = ModelCheckpoint(log_dir + 'ep{epoch:03d}-loss{loss:.3f}-val_loss{val_loss:.3f}.h5',
         monitor='val_loss', save_weights_only=True, save_best_only=True, period=3)
     reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=3, verbose=1)
     early_stopping = EarlyStopping(monitor='val_loss', min_delta=0, patience=10, verbose=1)
@@ -76,7 +76,7 @@ def _main():
                 validation_steps=max(1, num_val//batch_size),
                 epochs=50,
                 initial_epoch=0,
-                callbacks=[logging, checkpoint])
+                callbacks=[logging])
         model.save_weights(log_dir + 'trained_weights_stage_1.h5')
 
     # Unfreeze and continue training, to fine-tune.
@@ -96,7 +96,7 @@ def _main():
             validation_steps=max(1, num_val//batch_size),
             epochs=100,
             initial_epoch=50,
-            callbacks=[logging, checkpoint, reduce_lr, early_stopping])
+            callbacks=[logging, reduce_lr, early_stopping])
         model.save_weights(log_dir + 'trained_weights_final.h5')
 
     # Further training if needed.
